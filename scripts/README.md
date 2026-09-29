@@ -28,7 +28,7 @@ For a local isolated run, start a disposable PostgreSQL instance, set `DATABASE_
 
 - Ensure the job's PostgreSQL health check is green before schema push.
 - If readiness times out, check the API, web, Expo, and proxy log sections in the failed job output. The shell runner prints bounded log tails only on failure.
-- Keep `BROWSER=none` on the Expo CI process: Expo's `--web` option must not launch its own desktop browser in the headless runner; Playwright opens the app for the smoke test.
+- Set `EXPO_UNSTABLE_HEADLESS=true` on the Expo CI process to skip its standalone React Native DevTools shell, whose bundled Chromium sandbox is not usable on the hosted runner. Keep `BROWSER=none` to prevent Expo from opening a desktop browser; Playwright still opens the app and runs the full smoke test.
 - For a local run, verify the three Replit workflows are running and `REPLIT_EXPO_DEV_DOMAIN` is available.
 - If CI's browser cannot launch, confirm `pnpm --filter @workspace/scripts exec playwright-core install --with-deps chromium` completed successfully and that the runner has not overridden `CHROMIUM_PATH`.
 - The isolated check needs no manager credentials. It will fail explicitly if `DATABASE_URL` is missing or if any UI/API assertion fails.
