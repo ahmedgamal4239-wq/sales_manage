@@ -1,0 +1,56 @@
+name: Employee access smoke check
+
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  employee-access-smoke:
+    name: Employee access smoke check
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: employee_access_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d employee_access_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      CI: "true"
+      DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/employee_access_test
+      SESSION_SECRET: employee-access-ci-only-session-secret
+      SMOKE_ORIGIN: https://localhost:8443
+      SMOKE_API_ORIGIN: http://127.0.0.1:8080
+      SMOKE_MOBILE_URL: https://localhost:8443/
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.26.1
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Install Chromium and Linux browser dependencies
+        run: pnpm --filter @workspace/scripts exec playwright-core install --with-deps chromium
+      - name: Run isolated employee sign-in and access smoke test
+        run: pnpm --filter @workspace/scripts run ci:employee-browser
