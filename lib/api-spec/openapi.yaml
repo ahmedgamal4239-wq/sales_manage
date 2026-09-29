@@ -1,0 +1,669 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 0.1.0
+  description: Sales operations API. All routes except login require an authenticated employee session.
+servers:
+  - url: /api
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/HealthStatus"}
+  /auth/login:
+    post:
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/LoginInput"}
+      responses:
+        "200":
+          description: Authenticated
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Employee"}
+  /auth/mobile-login:
+    post:
+      operationId: mobileLogin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/LoginInput"}
+      responses:
+        "200":
+          description: Native app session
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/MobileSession"}
+  /auth/logout:
+    post:
+      operationId: logout
+      responses:
+        "200":
+          description: Signed out
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Message"}
+  /auth/me:
+    get:
+      operationId: getMe
+      responses:
+        "200":
+          description: Session employee
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Employee"}
+  /auth/password:
+    post:
+      operationId: changePassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/PasswordInput"}
+      responses:
+        "200":
+          description: Changed
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Message"}
+  /dashboard:
+    get:
+      operationId: getDashboard
+      responses:
+        "200":
+          description: Scoped overview
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Dashboard"}
+  /users:
+    get:
+      operationId: listUsers
+      responses:
+        "200":
+          description: Employees
+          content:
+            application/json:
+              schema: {type: array, items: {$ref: "#/components/schemas/Employee"}}
+    post:
+      operationId: createUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/UserInput"}
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Employee"}
+  /users/{id}:
+    patch:
+      operationId: updateUser
+      parameters:
+        - {$ref: "#/components/parameters/Id"}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/UserUpdate"}
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Employee"}
+  /customers:
+    get:
+      operationId: listCustomers
+      responses:
+        "200":
+          description: Scoped customers
+          content:
+            application/json:
+              schema: {type: array, items: {$ref: "#/components/schemas/Customer"}}
+    post:
+      operationId: createCustomer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/CustomerInput"}
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Customer"}
+  /customers/{id}:
+    patch:
+      operationId: updateCustomer
+      parameters:
+        - {$ref: "#/components/parameters/Id"}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/CustomerInput"}
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Customer"}
+  /customers/{id}/payment-photo-upload:
+    post:
+      operationId: requestCustomerPaymentPhotoUpload
+      parameters:
+        - {$ref: "#/components/parameters/Id"}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/CustomerPaymentPhotoUploadInput"}
+      responses:
+        "200":
+          description: Short-lived private upload URL
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/CustomerPaymentPhotoUpload"}
+  /customers/{id}/payments:
+    get:
+      operationId: listCustomerPayments
+      parameters:
+        - {$ref: "#/components/parameters/Id"}
+      responses:
+        "200":
+          description: Payments for an accessible customer
+          content:
+            application/json:
+              schema: {type: array, items: {$ref: "#/components/schemas/CustomerPayment"}}
+    post:
+      operationId: createCustomerPayment
+      parameters:
+        - {$ref: "#/components/parameters/Id"}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/CustomerPaymentInput"}
+      responses:
+        "201":
+          description: Recorded customer payment
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/CustomerPayment"}
+  /customers/{id}/payments/{paymentId}/photo:
+    get:
+      operationId: getCustomerPaymentPhoto
+      parameters:
+        - {$ref: "#/components/parameters/Id"}
+        - name: paymentId
+          in: path
+          required: true
+          schema: {type: integer}
+      responses:
+        "200":
+          description: Private customer payment photo
+          content:
+            image/jpeg:
+              schema: {type: string, format: binary}
+            image/png:
+              schema: {type: string, format: binary}
+            image/webp:
+              schema: {type: string, format: binary}
+  /branches:
+    get:
+      operationId: listBranches
+      responses:
+        "200":
+          description: Scoped branches
+          content:
+            application/json:
+              schema: {type: array, items: {$ref: "#/components/schemas/Branch"}}
+    post:
+      operationId: createBranch
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/BranchInput"}
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Branch"}
+  /branches/{id}:
+    patch:
+      operationId: updateBranch
+      parameters:
+        - {$ref: "#/components/parameters/Id"}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/BranchInput"}
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Branch"}
+  /products:
+    get:
+      operationId: listProducts
+      responses:
+        "200":
+          description: Catalogue
+          content:
+            application/json:
+              schema: {type: array, items: {$ref: "#/components/schemas/Product"}}
+    post:
+      operationId: createProduct
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/ProductInput"}
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Product"}
+  /products/{id}:
+    patch:
+      operationId: updateProduct
+      parameters:
+        - {$ref: "#/components/parameters/Id"}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/ProductInput"}
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Product"}
+  /imports/preview:
+    post:
+      operationId: previewImport
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema: {$ref: "#/components/schemas/ImportUpload"}
+      responses:
+        "200":
+          description: Validated preview
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/ImportPreview"}
+  /imports/confirm:
+    post:
+      operationId: confirmImport
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/ImportConfirmation"}
+      responses:
+        "200":
+          description: Applied atomically
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/ImportResult"}
+  /sales:
+    get:
+      operationId: listSales
+      responses:
+        "200":
+          description: Scoped daily reports
+          content:
+            application/json:
+              schema: {type: array, items: {$ref: "#/components/schemas/SalesReport"}}
+    post:
+      operationId: saveSales
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/SalesInput"}
+      responses:
+        "201":
+          description: Saved draft or submitted report
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/SalesReport"}
+  /attendance:
+    get:
+      operationId: listAttendance
+      responses:
+        "200":
+          description: Scoped punch history
+          content:
+            application/json:
+              schema: {type: array, items: {$ref: "#/components/schemas/Punch"}}
+    post:
+      operationId: punchAttendance
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/PunchInput"}
+      responses:
+        "201":
+          description: Recorded attempt
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Punch"}
+  /exports/{kind}:
+    get:
+      operationId: exportData
+      parameters:
+        - name: kind
+          in: path
+          required: true
+          schema: {type: string, enum: [users, customers, products, branches, sales, attendance]}
+      responses:
+        "200":
+          description: Authorized Excel workbook
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema: {type: string, format: binary}
+components:
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema: {type: integer}
+  schemas:
+    HealthStatus:
+      type: object
+      required: [status]
+      properties:
+        status: {type: string}
+    Message:
+      type: object
+      required: [message]
+      properties:
+        message: {type: string}
+    MobileSession:
+      type: object
+      required: [user, token]
+      properties:
+        user: {$ref: "#/components/schemas/Employee"}
+        token: {type: string}
+    LoginInput:
+      type: object
+      required: [employeeId, password]
+      properties:
+        employeeId: {type: string}
+        password: {type: string}
+    PasswordInput:
+      type: object
+      required: [currentPassword, newPassword]
+      properties:
+        currentPassword: {type: string}
+        newPassword: {type: string, minLength: 12}
+    Employee:
+      type: object
+      required: [id, employeeId, nameAr, role, active, mustChangePassword, effectivePermissions]
+      properties:
+        id: {type: integer}
+        employeeId: {type: string}
+        nameAr: {type: string}
+        nameEn: {type: ["string", "null"]}
+        role: {type: string}
+        active: {type: boolean}
+        mustChangePassword: {type: boolean}
+        areaId: {type: ["integer", "null"]}
+        branchId: {type: ["integer", "null"]}
+        permissions:
+          type: ["array", "null"]
+          items: {$ref: "#/components/schemas/Permission"}
+          description: Null uses all permissions allowed by the role; an array narrows them.
+        effectivePermissions:
+          type: array
+          items: {$ref: "#/components/schemas/Permission"}
+    Permission:
+      type: string
+      enum: [dashboard.view, users.view, users.manage, customers.view, customers.manage, branches.view, branches.manage, products.view, products.manage, imports.manage, exports.view, sales.view, sales.write, attendance.view, attendance.write]
+    UserInput:
+      type: object
+      required: [employeeId, nameAr, role, password]
+      properties:
+        employeeId: {type: string, minLength: 1}
+        nameAr: {type: string, minLength: 1}
+        nameEn: {type: string}
+        role: {type: string, enum: [PENDING, HIGHER_MANAGEMENT, AREA_MANAGER, RETAIL_AGENT, HYPER_AGENT, HYPER_SELLER, WAREHOUSE]}
+        password: {type: string, minLength: 12}
+        areaId: {type: ["integer", "null"]}
+        branchId: {type: ["integer", "null"]}
+        permissions:
+          type: ["array", "null"]
+          items: {$ref: "#/components/schemas/Permission"}
+    UserUpdate:
+      type: object
+      properties:
+        employeeId: {type: string, minLength: 1}
+        nameAr: {type: string}
+        nameEn: {type: string}
+        role: {type: string, enum: [PENDING, HIGHER_MANAGEMENT, AREA_MANAGER, RETAIL_AGENT, HYPER_AGENT, HYPER_SELLER, WAREHOUSE]}
+        active: {type: boolean}
+        password: {type: string, minLength: 12}
+        areaId: {type: ["integer", "null"]}
+        branchId: {type: ["integer", "null"]}
+        permissions:
+          type: ["array", "null"]
+          items: {$ref: "#/components/schemas/Permission"}
+    Customer:
+      type: object
+      required: [id, name, type]
+      properties:
+        id: {type: integer}
+        name: {type: string}
+        type: {type: string}
+        address: {type: ["string", "null"]}
+        phone: {type: ["string", "null"]}
+        ownerId: {type: ["integer", "null"]}
+        areaId: {type: ["integer", "null"]}
+    CustomerInput:
+      type: object
+      required: [name, type]
+      properties:
+        name: {type: string, minLength: 1}
+        type: {type: string, enum: [INDIVIDUAL, BUSINESS]}
+        address: {type: string}
+        phone: {type: string}
+        ownerId: {type: ["integer", "null"]}
+        areaId: {type: ["integer", "null"]}
+    CustomerPayment:
+      type: object
+      required: [id, customerId, recordedBy, method, amount, paymentDate, createdAt, photoAvailable]
+      properties:
+        id: {type: integer}
+        customerId: {type: integer}
+        recordedBy: {type: integer}
+        method: {type: string, enum: [CASH, CHEQUE]}
+        amount: {type: string}
+        paymentDate: {type: string}
+        createdAt: {type: string, format: date-time}
+        photoAvailable: {type: boolean}
+    CustomerPaymentInput:
+      type: object
+      required: [method, amount, paymentDate]
+      properties:
+        method: {type: string, enum: [CASH, CHEQUE]}
+        amount: {type: string, pattern: '^(?:0|[1-9]\d{0,11})(?:\.\d{1,2})?$'}
+        paymentDate: {type: string}
+        photoObjectPath: {type: ["string", "null"]}
+    CustomerPaymentPhotoUploadInput:
+      type: object
+      required: [name, size, contentType]
+      properties:
+        name: {type: string, minLength: 1, maxLength: 255}
+        size: {type: integer, minimum: 1, maximum: 5242880}
+        contentType: {type: string, enum: [image/jpeg, image/png, image/webp]}
+    CustomerPaymentPhotoUpload:
+      type: object
+      required: [uploadURL, objectPath]
+      properties:
+        uploadURL: {type: string, format: uri}
+        objectPath: {type: string}
+    Product:
+      type: object
+      required: [id, code, nameAr, price, priceReview, active]
+      properties:
+        id: {type: integer}
+        code: {type: string}
+        nameAr: {type: string}
+        nameEn: {type: ["string", "null"]}
+        price: {type: string}
+        priceReview: {type: boolean}
+        active: {type: boolean}
+    ProductInput:
+      type: object
+      required: [code, nameAr, price]
+      properties:
+        code: {type: string, minLength: 1}
+        nameAr: {type: string, minLength: 1}
+        nameEn: {type: string}
+        price: {type: string}
+        active: {type: boolean}
+    Branch:
+      type: object
+      required: [id, name, timezone, radiusMeters]
+      properties:
+        id: {type: integer}
+        name: {type: string}
+        chain: {type: ["string", "null"]}
+        areaId: {type: ["integer", "null"]}
+        agentId: {type: ["integer", "null"]}
+        latitude: {type: ["number", "null"]}
+        longitude: {type: ["number", "null"]}
+        radiusMeters: {type: integer}
+        timezone: {type: string}
+    BranchInput:
+      type: object
+      required: [name, timezone, radiusMeters]
+      properties:
+        name: {type: string, minLength: 1}
+        chain: {type: string}
+        areaId: {type: ["integer", "null"]}
+        agentId: {type: ["integer", "null"]}
+        latitude: {type: ["number", "null"]}
+        longitude: {type: ["number", "null"]}
+        radiusMeters: {type: integer}
+        timezone: {type: string}
+    ImportUpload:
+      type: object
+      required: [kind, file]
+      properties:
+        kind: {type: string, enum: [products, users]}
+        file: {type: string, format: binary}
+    ImportRow:
+      type: object
+      required: [code, name, change]
+      properties:
+        code: {type: string}
+        name: {type: string}
+        price: {type: ["string", "null"]}
+        change: {type: string}
+    ImportPreview:
+      type: object
+      required: [token, sheet, total, newCount, updateCount, rows]
+      properties:
+        token: {type: string}
+        sheet: {type: string}
+        total: {type: integer}
+        newCount: {type: integer}
+        updateCount: {type: integer}
+        rows: {type: array, items: {$ref: "#/components/schemas/ImportRow"}}
+    ImportConfirmation:
+      type: object
+      required: [token]
+      properties:
+        token: {type: string}
+    ImportResult:
+      type: object
+      required: [created, updated]
+      properties:
+        created: {type: integer}
+        updated: {type: integer}
+    SalesLine:
+      type: object
+      required: [productId, quantity, amount, returns]
+      properties:
+        productId: {type: integer}
+        quantity: {type: integer}
+        amount: {type: string}
+        returns: {type: string}
+    SalesInput:
+      type: object
+      required: [branchId, businessDate, lines, submitted]
+      properties:
+        branchId: {type: integer}
+        businessDate: {type: string}
+        lines: {type: array, items: {$ref: "#/components/schemas/SalesLine"}}
+        submitted: {type: boolean}
+        notes: {type: string}
+    SalesReport:
+      type: object
+      required: [id, sellerId, branchId, businessDate, status, gross, returns, net, lines]
+      properties:
+        id: {type: integer}
+        sellerId: {type: integer}
+        branchId: {type: integer}
+        businessDate: {type: string}
+        status: {type: string}
+        gross: {type: string}
+        returns: {type: string}
+        net: {type: string}
+        lines: {type: array, items: {$ref: "#/components/schemas/SalesLine"}}
+        notes: {type: ["string", "null"]}
+    PunchInput:
+      type: object
+      required: [branchId, type, latitude, longitude, accuracy, capturedAt]
+      properties:
+        branchId: {type: integer}
+        type: {type: string, enum: [IN, OUT]}
+        latitude: {type: number}
+        longitude: {type: number}
+        accuracy: {type: number}
+        capturedAt: {type: string}
+    Punch:
+      type: object
+      required: [id, sellerId, branchId, type, status, receivedAt]
+      properties:
+        id: {type: integer}
+        sellerId: {type: integer}
+        branchId: {type: integer}
+        type: {type: string}
+        status: {type: string}
+        receivedAt: {type: string}
+        distanceMeters: {type: ["number", "null"]}
+    Dashboard:
+      type: object
+      required: [users, customers, products, branches, submittedSales, attendanceExceptions, salesTotal]
+      properties:
+        users: {type: integer}
+        customers: {type: integer}
+        products: {type: integer}
+        branches: {type: integer}
+        submittedSales: {type: integer}
+        attendanceExceptions: {type: integer}
+        salesTotal: {type: string}

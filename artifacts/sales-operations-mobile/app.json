@@ -1,0 +1,23 @@
+{
+  "expo": {
+    "name": "Sales Operations Mobile",
+    "slug": "sales-operations-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/operations-icon.png",
+    "scheme": "sales-operations-mobile",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": false
+    },
+    "android": {},
+    "web": {
+      "favicon": "./assets/images/operations-icon.png"
+    },
+    "plugins": ["expo-router"],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
+}

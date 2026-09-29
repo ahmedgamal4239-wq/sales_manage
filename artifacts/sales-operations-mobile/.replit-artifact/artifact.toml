@@ -1,0 +1,24 @@
+kind = "mobile"
+previewPath = "/mobile/"
+title = "Sales Operations Mobile"
+description = "Mobile companion for hypermarket sellers to record daily sales and location-based attendance using the shared employee account."
+version = "1.0.0"
+id = "artifacts/sales-operations-mobile"
+router = "expo-domain"
+
+[[services]]
+name = "expo"
+ensurePreviewReachable = "/status"
+paths = [ "/mobile/" ]
+localPort = 22356
+
+[services.development]
+run = "pnpm --filter @workspace/sales-operations-mobile run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/sales-operations-mobile", "run", "build" ]
+run = [ "pnpm", "--filter", "@workspace/sales-operations-mobile", "run", "serve" ]
+
+[services.env]
+PORT = "22356"
+BASE_PATH = "/mobile/"

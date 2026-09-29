@@ -1,0 +1,5 @@
+- [First manager access](first-manager-access.md) — initial administrator creation stays outside public HTTP routes; imported staff never receive inferred permissions.
+- [Employee access policy](employee-access-policy.md) — custom permissions narrow role defaults and never expand role or assignment scope.
+- [Secret refresh checks](secret-refresh-checks.md) — a secret confirmation alone does not prove a new value reached the runtime; verify policy without revealing it.
+- [Auth-scoped query observers](auth-scoped-query-observers.md) — preserve active React Query observers when access changes, or protected pages can stall after refresh.
+- [Isolated smoke readiness](isolated-smoke-readiness.md) — check port ownership before probing readiness so an existing preview cannot masquerade as an isolated test service.

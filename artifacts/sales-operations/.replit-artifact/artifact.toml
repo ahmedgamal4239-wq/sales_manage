@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Sales Operations"
+description = "Bilingual sales operations workspace for management, retail and hypermarket agents, sellers, and warehouse staff."
+version = "1.0.0"
+id = "artifacts/sales-operations"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 20133
+
+[services.development]
+run = "pnpm --filter @workspace/sales-operations run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/sales-operations", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/sales-operations/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "20133"
+BASE_PATH = "/"

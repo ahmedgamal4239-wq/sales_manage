@@ -1,0 +1,25 @@
+{
+  "name": "@workspace/scripts",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "hello": "tsx ./src/hello.ts",
+    "seed-supplied": "tsx ./src/seed-supplied.ts",
+    "bootstrap-manager": "tsx ./src/bootstrap-manager.ts",
+    "verify-employee-browser": "tsx ./src/verify-employee-browser.ts",
+    "verify-preview-login": "tsx ./src/verify-preview-login.ts",
+    "ci:employee-browser": "bash ./ci/employee-access-smoke.sh",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@workspace/db": "workspace:*",
+    "drizzle-orm": "catalog:",
+    "exceljs": "^4.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "playwright-core": "^1.63.0",
+    "tsx": "catalog:"
+  }
+}
