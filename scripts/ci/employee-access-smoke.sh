@@ -71,8 +71,9 @@ start_service web env \
   BASE_PATH=/sales-operations/ PORT="$web_port" \
   pnpm --filter @workspace/sales-operations run dev
 
+# Expo must not open its own desktop browser in headless CI; Playwright opens the app below.
 start_service expo env \
-  CI=true EXPO_PUBLIC_DOMAIN="localhost:$proxy_port" EXPO_PUBLIC_REPL_ID=employee-access-smoke \
+  BROWSER=none CI=true EXPO_PUBLIC_DOMAIN="localhost:$proxy_port" EXPO_PUBLIC_REPL_ID=employee-access-smoke \
   REACT_NATIVE_PACKAGER_HOSTNAME=127.0.0.1 PORT="$expo_port" \
   pnpm --filter @workspace/sales-operations-mobile exec expo start --web --localhost --port "$expo_port"
 
