@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
+echo "Intentional failure for employee smoke branch-protection verification"
+exit 1
 
 : "${DATABASE_URL:?The smoke check requires its disposable PostgreSQL database}"
 
