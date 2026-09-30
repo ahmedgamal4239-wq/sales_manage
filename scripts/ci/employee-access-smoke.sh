@@ -75,7 +75,7 @@ start_service web env \
 start_service expo env \
   BROWSER=none CI=true EXPO_UNSTABLE_HEADLESS=true EXPO_NO_WEB_SETUP=false EXPO_PUBLIC_DOMAIN="localhost:$proxy_port" EXPO_PUBLIC_REPL_ID=employee-access-smoke \
   REACT_NATIVE_PACKAGER_HOSTNAME=127.0.0.1 PORT="$expo_port" \
-  pnpm --filter @workspace/sales-operations-mobile exec expo start --web --localhost --port "$expo_port"
+  pnpm --filter @workspace/sales-operations-mobile exec expo start --web --lan --port "$expo_port"
 
 start_service proxy env \
   SMOKE_TLS_KEY="$work_dir/localhost.key" SMOKE_TLS_CERT="$work_dir/localhost.crt" \
@@ -95,6 +95,13 @@ wait_for_http() {
     sleep 2
   done
   echo "Timed out waiting for $name at $url." >&2
+  echo "::error title=Smoke service readiness::$name did not return HTTP 200 at $url."
+  if [[ "$name" == "Expo web app" ]]; then
+    for host in 127.0.0.1 localhost; do
+      code="$(curl --silent --output /dev/null --max-time 5 --write-out "%{http_code}" "http://$host:$expo_port/" 2>/dev/null || true)"
+      echo "::error title=Expo HTTP probe::$host:$expo_port returned HTTP ${code:-000}."
+    done
+  fi
   return 1
 }
 
@@ -104,7 +111,10 @@ wait_for_http "Expo web app" "http://127.0.0.1:$expo_port/"
 wait_for_http "HTTPS test proxy" "https://localhost:$proxy_port/api/healthz"
 
 echo "Running browser smoke test with throwaway accounts and no retained browser artifacts..."
-SMOKE_ORIGIN="https://localhost:$proxy_port" \
-SMOKE_API_ORIGIN="http://127.0.0.1:$api_port" \
-SMOKE_MOBILE_URL="https://localhost:$proxy_port/" \
-pnpm --filter @workspace/scripts run verify-employee-browser
+if ! SMOKE_ORIGIN="https://localhost:$proxy_port" \
+  SMOKE_API_ORIGIN="http://127.0.0.1:$api_port" \
+  SMOKE_MOBILE_URL="https://localhost:$proxy_port/" \
+  pnpm --filter @workspace/scripts run verify-employee-browser; then
+  echo "::error title=Employee browser check::Browser smoke test failed after services became ready."
+  exit 1
+fi
