@@ -14,13 +14,9 @@ The script uses the running preview by default. Set `SMOKE_ORIGIN`, `SMOKE_API_O
 
 The `Employee access smoke check` GitHub Actions workflow runs for pull requests, pushes to `main`/`master`, manual dispatch, and reusable workflow calls. It starts a fresh PostgreSQL 16 service, applies the current schema, and launches the API, Vite web app, and Expo web app. A short-lived, self-signed HTTPS proxy gives all three apps a shared browser origin. The proxy certificate, service logs, and processes are removed at the end of the run.
 
-The workflow is **not a release gate by itself**. To block a merge when employee sign-in fails:
+The **Employee access smoke check** is a required status check on the GitHub repository's `main` branch, which is currently the only release branch. Branch protection requires pull requests, applies to administrators, requires this check to pass, and disallows force pushes and branch deletion. Protect any additional release branch before using it.
 
-1. Push this project (including `.github/workflows/employee-access-smoke.yml`) to the GitHub repository and open a pull request so the check runs at least once.
-2. In the repository settings, protect each release branch (at least `main`, and `master` if used). Require a pull request before merging and require the **Employee access smoke check** status check to pass. Apply the rule to administrators too, and avoid bypass permissions for release authors.
-3. Confirm the rule is active by opening a disposable pull request with a deliberately failing smoke check. Verify GitHub reports the check as failed and disables merging, then close the pull request without merging it. Remove the deliberate failure from the disposable branch.
-
-The public `ahmedgamal4239-wq/sales_manage` repository now contains the project source, but its `.github/workflows/employee-access-smoke.yml` workflow has not been added there yet. Until that workflow is committed, runs successfully, and is configured as required on `main`, **merges are not gated**. Do not treat the workflow in a local checkout or a successful local smoke run as proof that the GitHub rule is active.
+This gate was verified with a disposable pull request whose smoke check was deliberately failed: GitHub marked the pull request as blocked from merging. The pull request was closed without merging, and its temporary branch was removed. On future pull requests, confirm the check is green before merging; a pending or failed check blocks the merge.
 
 There is currently no GitHub publish workflow to depend on the reusable smoke workflow. If one is added later, have its publish job `needs` a job that calls `.github/workflows/employee-access-smoke.yml` with `workflow_call`; do not publish when that job fails. GitHub branch rules do not prevent someone from publishing directly through Replit.
 
@@ -32,6 +28,7 @@ For a local isolated run, start a disposable PostgreSQL instance, set `DATABASE_
 
 - Ensure the job's PostgreSQL health check is green before schema push.
 - If readiness times out, check the API, web, Expo, and proxy log sections in the failed job output. The shell runner prints bounded log tails only on failure.
+- Set `EXPO_UNSTABLE_HEADLESS=true` on the Expo CI process to skip its standalone React Native DevTools shell, whose bundled Chromium sandbox is not usable on the hosted runner. Also set `EXPO_NO_WEB_SETUP=false`: headless mode otherwise skips Expo's web setup. Keep `BROWSER=none` to prevent Expo from opening a desktop browser; Playwright still opens the app and runs the full smoke test.
 - For a local run, verify the three Replit workflows are running and `REPLIT_EXPO_DEV_DOMAIN` is available.
 - If CI's browser cannot launch, confirm `pnpm --filter @workspace/scripts exec playwright-core install --with-deps chromium` completed successfully and that the runner has not overridden `CHROMIUM_PATH`.
 - The isolated check needs no manager credentials. It will fail explicitly if `DATABASE_URL` is missing or if any UI/API assertion fails.
